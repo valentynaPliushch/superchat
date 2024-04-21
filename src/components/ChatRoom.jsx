@@ -27,9 +27,12 @@ import { text } from "@fortawesome/fontawesome-svg-core";
 
 function ChatRoom() {
   const [messages, setMessages] = useState([]);
-  const [formValue, setFormValue] = useState("");
+  const [formValue, setFormValue] = useState();
   const [picture, setPicture] = useState();
-  const [edit, setEdit] = useState();
+  const [edit, setEdit] = useState({
+    value: false,
+    id: "",
+  });
   const [imageURL, setImageURL] = useState();
 
   const auth = getAuth();
@@ -54,17 +57,28 @@ function ChatRoom() {
     getMessages();
   }, []);
 
-  const sendMessage = async (e) => {
-    e.preventDefault();
+  const storage = getStorage();
 
+  const uploadPicture = async () => {
+    if (picture == null) {
+      return;
+    }
+    const imageRef = ref(storage, `images/${picture.name + v4()}`);
     const { uid, photoURL } = auth.currentUser;
+
+    await uploadBytes(imageRef, picture).then(() => {
+      alert("Image uploaded");
+    });
+    await getDownloadURL(imageRef).then((item) => {
+      setImageURL(item);
+    });
+
     await addDoc(collection(db, "messages"), {
       createdAt: serverTimestamp(),
       photoURL,
-      text: formValue,
+      image: `${imageURL}`,
       uid,
     });
-    setFormValue("");
   };
 
   const editMessage = (text, id) => {
@@ -75,40 +89,29 @@ function ChatRoom() {
     });
   };
 
-  const updateMessage = async (e) => {
+  const onSubmit = async (e) => {
     e.preventDefault();
-    const messageRef = doc(db, "messages", edit.id);
 
-    await updateDoc(messageRef, {
-      text: formValue,
-    });
+    if (edit.value) {
+      const messageRef = doc(db, "messages", edit.id);
 
-    setEdit("");
-    setFormValue("");
+      await updateDoc(messageRef, {
+        text: formValue,
+      });
+
+      setEdit("");
+      setFormValue("");
+    } else {
+      const { uid, photoURL } = auth.currentUser;
+      await addDoc(collection(db, "messages"), {
+        createdAt: serverTimestamp(),
+        photoURL,
+        text: formValue,
+        uid,
+      });
+      setFormValue("");
+    }
   };
-  const storage = getStorage();
-
-  // const uploadPicture = async () => {
-  //   if (picture == null) {
-  //     return;
-  //   }
-  //   const imageRef = ref(storage, `images/${picture.name + v4()}`);
-  //   const { uid, photoURL } = auth.currentUser;
-
-  //   await uploadBytes(imageRef, picture).then(() => {
-  //     alert("Image uploaded");
-  //   });
-  //   await getDownloadURL(imageRef).then((item) => {
-  //     setImageURL(item);
-  //   });
-
-  //   await addDoc(collection(db, "messages"), {
-  //     createdAt: serverTimestamp(),
-  //     photoURL,
-  //     image: `${imageURL}`,
-  //     uid,
-  //   });
-  // };
 
   return (
     <>
@@ -118,16 +121,15 @@ function ChatRoom() {
             <ChatMessage key={index} message={message} onEdit={editMessage} />
           ))}
       </main>
-      <form onSubmit={edit.value === "undefined" ? sendMessage : updateMessage}>
-        {/* <form onSubmit={sendMessage}> */}
+      <form onSubmit={(e) => onSubmit(e)}>
         <input
           value={formValue}
           onChange={(e) => setFormValue(e.target.value)}
           placeholder="Type your message..."
         />
-        {/* <input type="file" onChange={(e) => setPicture(e.target.files[0])} /> */}
+        {/* <input type="file" onChange={(e) => setPicture(e.target.files)} />
 
-        {/* <button type="button" onClick={uploadPicture}>
+        <button type="button" onClick={uploadPicture}>
           <FontAwesomeIcon icon={faPaperclip} />
         </button> */}
 
