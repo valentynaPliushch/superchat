@@ -36,6 +36,7 @@ function ChatRoom() {
   const [imageURL, setImageURL] = useState();
 
   const auth = getAuth();
+  const storage = getStorage();
 
   useEffect(() => {
     const getMessages = async () => {
@@ -57,20 +58,24 @@ function ChatRoom() {
     getMessages();
   }, []);
 
-  const storage = getStorage();
-
   const uploadPicture = async () => {
     if (picture == null) {
       return;
     }
-    const imageRef = ref(storage, `images/${picture.name + v4()}`);
+    const imageRef = ref(storage, `images/${v4()}`);
     const { uid, photoURL } = auth.currentUser;
 
     await uploadBytes(imageRef, picture).then(() => {
       alert("Image uploaded");
     });
+
+    const newRef = ref(storage, `images/`);
+    await listAll(newRef).then((res) => {
+      getDownloadURL(res.items[0]).then((url) => console.log(url));
+    });
     await getDownloadURL(imageRef).then((item) => {
       setImageURL(item);
+      // console.log(item);
     });
 
     await addDoc(collection(db, "messages"), {
@@ -127,11 +132,15 @@ function ChatRoom() {
           onChange={(e) => setFormValue(e.target.value)}
           placeholder="Type your message..."
         />
-        {/* <input type="file" onChange={(e) => setPicture(e.target.files)} />
+        <input type="file" onChange={(e) => setPicture(e.target.files[0])} />
+        <button
+          type="button"
+          onClick={() => console.log(picture.name.split(".")[0])}
+        ></button>
 
         <button type="button" onClick={uploadPicture}>
           <FontAwesomeIcon icon={faPaperclip} />
-        </button> */}
+        </button>
 
         <button type="submit" disabled={!formValue}>
           🕊️
