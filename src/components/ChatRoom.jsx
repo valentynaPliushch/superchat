@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { v4 } from "uuid";
 import { getAuth } from "firebase/auth";
 import {
@@ -21,7 +21,7 @@ import {
 } from "firebase/storage";
 import { db } from "../firebase.config";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPaperclip } from "@fortawesome/free-solid-svg-icons";
+import { faPaperclip, faXmark } from "@fortawesome/free-solid-svg-icons";
 import ChatMessage from "./ChatMessage";
 import { text } from "@fortawesome/fontawesome-svg-core";
 
@@ -33,7 +33,10 @@ function ChatRoom() {
     value: false,
     id: "",
   });
-  const [imageURL, setImageURL] = useState();
+  const [imageURL, setImageURL] = useState({
+    url: "",
+    name: "",
+  });
 
   const auth = getAuth();
   const storage = getStorage();
@@ -62,29 +65,27 @@ function ChatRoom() {
     if (picture == null) {
       return;
     }
-    const imageRef = ref(storage, `images/${v4()}`);
+    const imageName = v4();
+    const imageRef = ref(storage, `images/${imageName}`);
     const { uid, photoURL } = auth.currentUser;
 
     await uploadBytes(imageRef, picture).then(() => {
       alert("Image uploaded");
     });
 
-    const newRef = ref(storage, `images/`);
-    await listAll(newRef).then((res) => {
-      getDownloadURL(res.items[0]).then((url) => console.log(url));
-    });
     await getDownloadURL(imageRef).then((item) => {
-      setImageURL(item);
-      // console.log(item);
+      setImageURL({ url: item, name: imageName });
     });
 
     await addDoc(collection(db, "messages"), {
       createdAt: serverTimestamp(),
       photoURL,
-      image: `${imageURL}`,
+      imageURL: imageURL.url,
+      imageName,
       uid,
     });
   };
+  console.log(imageURL);
 
   const editMessage = (text, id) => {
     setFormValue(text);
@@ -118,6 +119,15 @@ function ChatRoom() {
     }
   };
 
+  const inputFile = useRef(null);
+  const handleReset = () => {
+    if (inputFile.current) {
+      inputFile.current.value = "";
+      inputFile.current.type = "text";
+      inputFile.current.type = "file";
+    }
+  };
+
   return (
     <>
       <main>
@@ -125,18 +135,22 @@ function ChatRoom() {
           messages.map((message, index) => (
             <ChatMessage key={index} message={message} onEdit={editMessage} />
           ))}
+        <input
+          type="file"
+          ref={inputFile}
+          onChange={(e) => setPicture(e.target.files[0])}
+        />
+        <button type="button" onClick={handleReset}>
+          <FontAwesomeIcon icon={faXmark} />
+        </button>
       </main>
       <form onSubmit={(e) => onSubmit(e)}>
         <input
           value={formValue}
           onChange={(e) => setFormValue(e.target.value)}
           placeholder="Type your message..."
+          disabled={picture}
         />
-        <input type="file" onChange={(e) => setPicture(e.target.files[0])} />
-        <button
-          type="button"
-          onClick={() => console.log(picture.name.split(".")[0])}
-        ></button>
 
         <button type="button" onClick={uploadPicture}>
           <FontAwesomeIcon icon={faPaperclip} />
