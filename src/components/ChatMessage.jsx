@@ -9,7 +9,7 @@ import { faTrash, faPenToSquare } from "@fortawesome/free-solid-svg-icons";
 function ChatMessage({ message, onEdit }) {
   const auth = getAuth();
   const { text, imageURL, imageName, uid, photoURL } = message.data;
-  console.log(photoURL);
+
   // ref.current.scrollIntoView({ behavior: "smooth" });
   const messageClass = uid === auth.currentUser.uid ? "sent" : "received";
 

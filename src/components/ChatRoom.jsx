@@ -70,7 +70,7 @@ function ChatRoom() {
     const imageName = v4();
     const imageRef = ref(storage, `images/${imageName}`);
     const { uid, photoURL } = auth.currentUser;
-    console.log(uid, photoURL);
+
     isLoading(true);
     await uploadBytes(imageRef, picture).then(() => {
       alert("Image uploaded");
@@ -129,6 +129,7 @@ function ChatRoom() {
       inputFile.current.value = "";
       inputFile.current.type = "text";
       inputFile.current.type = "file";
+      setPicture({});
     }
   };
 
@@ -148,9 +149,16 @@ function ChatRoom() {
           placeholder="Type your message..."
         />
         <div className="file_input_div">
-          <label for="file_input" className="btn_file_input">
-            Select picture
-          </label>
+          {picture ? (
+            <label htmlFor="file_input" className="btn_file_input">
+              pisture selected
+            </label>
+          ) : (
+            <label htmlFor="file_input" className="btn_file_input">
+              Select picture
+            </label>
+          )}
+
           <input
             type="file"
             id="file_input"
