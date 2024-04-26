@@ -23,9 +23,11 @@ import { db } from "../firebase.config";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPaperclip, faXmark } from "@fortawesome/free-solid-svg-icons";
 import ChatMessage from "./ChatMessage";
+import Spinner from "./Spinner";
 import { text } from "@fortawesome/fontawesome-svg-core";
 
 function ChatRoom() {
+  const [loading, isLoading] = useState(false);
   const [messages, setMessages] = useState([]);
   const [formValue, setFormValue] = useState();
   const [picture, setPicture] = useState();
@@ -68,24 +70,26 @@ function ChatRoom() {
     const imageName = v4();
     const imageRef = ref(storage, `images/${imageName}`);
     const { uid, photoURL } = auth.currentUser;
-
+    console.log(uid, photoURL);
+    isLoading(true);
     await uploadBytes(imageRef, picture).then(() => {
       alert("Image uploaded");
     });
-
     await getDownloadURL(imageRef).then((item) => {
       setImageURL({ url: item, name: imageName });
     });
+    if (imageURL.url !== "") {
+      await addDoc(collection(db, "messages"), {
+        createdAt: serverTimestamp(),
+        photoURL,
+        imageURL: imageURL.url,
+        imageName,
+        uid,
+      });
 
-    await addDoc(collection(db, "messages"), {
-      createdAt: serverTimestamp(),
-      photoURL,
-      imageURL: imageURL.url,
-      imageName,
-      uid,
-    });
+      isLoading(false);
+    }
   };
-  console.log(imageURL);
 
   const editMessage = (text, id) => {
     setFormValue(text);
@@ -131,28 +135,41 @@ function ChatRoom() {
   return (
     <>
       <main>
+        {loading && <Spinner />}
         {messages &&
           messages.map((message, index) => (
             <ChatMessage key={index} message={message} onEdit={editMessage} />
           ))}
-        <input
-          type="file"
-          ref={inputFile}
-          onChange={(e) => setPicture(e.target.files[0])}
-        />
-        <button type="button" onClick={handleReset}>
-          <FontAwesomeIcon icon={faXmark} />
-        </button>
       </main>
       <form onSubmit={(e) => onSubmit(e)}>
         <input
           value={formValue}
           onChange={(e) => setFormValue(e.target.value)}
           placeholder="Type your message..."
-          disabled={picture}
         />
+        <div className="file_input_div">
+          <label for="file_input" className="btn_file_input">
+            Select picture
+          </label>
+          <input
+            type="file"
+            id="file_input"
+            max="1"
+            accept=".jpg,.png,.jpeg"
+            ref={inputFile}
+            onChange={(e) => setPicture(e.target.files[0])}
+            style={{ display: "none" }}
+          />
+          <button
+            className="clear_file_input"
+            type="button"
+            onClick={handleReset}
+          >
+            <FontAwesomeIcon icon={faXmark} />
+          </button>
+        </div>
 
-        <button type="button" onClick={uploadPicture}>
+        <button type="button" onClick={picture && uploadPicture}>
           <FontAwesomeIcon icon={faPaperclip} />
         </button>
 

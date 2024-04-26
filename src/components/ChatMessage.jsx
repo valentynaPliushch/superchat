@@ -9,6 +9,7 @@ import { faTrash, faPenToSquare } from "@fortawesome/free-solid-svg-icons";
 function ChatMessage({ message, onEdit }) {
   const auth = getAuth();
   const { text, imageURL, imageName, uid, photoURL } = message.data;
+  console.log(photoURL);
   // ref.current.scrollIntoView({ behavior: "smooth" });
   const messageClass = uid === auth.currentUser.uid ? "sent" : "received";
 
@@ -17,13 +18,7 @@ function ChatMessage({ message, onEdit }) {
       if (imageName && imageURL) {
         const storage = getStorage();
         const imageRef = ref(storage, `images/${imageName}`);
-        await deleteObject(imageRef)
-          .then(() => {
-            // File deleted successfully
-          })
-          .catch((error) => {
-            // Uh-oh, an error occurred!
-          });
+        await deleteObject(imageRef);
         await deleteDoc(doc(db, "messages", message.id));
       } else {
         await deleteDoc(doc(db, "messages", message.id));
@@ -34,7 +29,7 @@ function ChatMessage({ message, onEdit }) {
   return (
     <>
       <div className={`message ${messageClass}`}>
-        <img src={photoURL} />
+        <img src={`${photoURL}`} />
         {imageURL ? (
           <img src={imageURL} className="message_image" />
         ) : (
