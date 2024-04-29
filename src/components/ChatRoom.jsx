@@ -12,19 +12,12 @@ import {
   addDoc,
   serverTimestamp,
 } from "firebase/firestore";
-import {
-  getStorage,
-  ref,
-  uploadBytes,
-  listAll,
-  getDownloadURL,
-} from "firebase/storage";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { db } from "../firebase.config";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPaperclip, faXmark } from "@fortawesome/free-solid-svg-icons";
 import ChatMessage from "./ChatMessage";
 import Spinner from "./Spinner";
-import { text } from "@fortawesome/fontawesome-svg-core";
 
 function ChatRoom() {
   const [loading, isLoading] = useState(false);
@@ -133,6 +126,10 @@ function ChatRoom() {
     }
   };
 
+  const sendPicture = (e) => {
+    setPicture(e.target.files[0]);
+  };
+
   return (
     <>
       <main>
@@ -149,15 +146,9 @@ function ChatRoom() {
           placeholder="Type your message..."
         />
         <div className="file_input_div">
-          {picture ? (
-            <label htmlFor="file_input" className="btn_file_input">
-              pisture selected
-            </label>
-          ) : (
-            <label htmlFor="file_input" className="btn_file_input">
-              Select picture
-            </label>
-          )}
+          <label htmlFor="file_input" className="btn_file_input">
+            Select picture
+          </label>
 
           <input
             type="file"
@@ -165,7 +156,8 @@ function ChatRoom() {
             max="1"
             accept=".jpg,.png,.jpeg"
             ref={inputFile}
-            onChange={(e) => setPicture(e.target.files[0])}
+            // onChange={(e) => setPicture(e.target.files[0])}
+            onChange={(e) => sendPicture(e)}
             style={{ display: "none" }}
           />
           <button

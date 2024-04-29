@@ -1,6 +1,6 @@
 import "./App.css";
-import { getAuth, signOut, onAuthStateChanged } from "firebase/auth";
-import { getAnalytics } from "firebase/analytics";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
+// import { getAnalytics } from "firebase/analytics";
 import SignIn from "./components/SignIn";
 import ChatRoom from "./components/ChatRoom";
 import { useEffect, useState } from "react";

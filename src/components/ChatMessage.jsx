@@ -1,6 +1,6 @@
 import React from "react";
 import { getStorage, ref, deleteObject } from "firebase/storage";
-import { doc, deleteDoc, updateDoc } from "firebase/firestore";
+import { doc, deleteDoc } from "firebase/firestore";
 import { db } from "../firebase.config";
 import { getAuth } from "firebase/auth";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
