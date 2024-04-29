@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { v4 } from "uuid";
+import { toast } from "react-toastify";
 import { getAuth } from "firebase/auth";
 import {
   doc,
@@ -12,6 +13,12 @@ import {
   addDoc,
   serverTimestamp,
 } from "firebase/firestore";
+import {
+  getStorage,
+  ref,
+  getDownloadURL,
+  uploadBytesResumable,
+} from "firebase/storage";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { db } from "../firebase.config";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -65,23 +72,47 @@ function ChatRoom() {
     const { uid, photoURL } = auth.currentUser;
 
     isLoading(true);
-    await uploadBytes(imageRef, picture).then(() => {
-      alert("Image uploaded");
-    });
-    await getDownloadURL(imageRef).then((item) => {
-      setImageURL({ url: item, name: imageName });
-    });
-    if (imageURL.url !== "") {
+
+    const uploadTask = uploadBytesResumable(imageRef, picture);
+
+    uploadTask.on(
+      "state_changed",
+      (snapshot) => {
+        // Observe state change events such as progress, pause, and resume
+        // Get task progress, including the number of bytes uploaded and the total number of bytes to be uploaded
+        const progress =
+          (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+        console.log("Upload is " + progress + "% done");
+        switch (snapshot.state) {
+          case "paused":
+            console.log("Upload is paused");
+            break;
+          case "running":
+            console.log("Upload is running");
+            break;
+        }
+      },
+      (error) => {
+        toast.error("Something went wrong during uploading picture");
+      },
+      () => {
+        getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
+          uploadImageToDatabase(downloadURL);
+        });
+      }
+    );
+
+    const uploadImageToDatabase = async (url) => {
       await addDoc(collection(db, "messages"), {
         createdAt: serverTimestamp(),
         photoURL,
-        imageURL: imageURL.url,
+        imageURL: url,
         imageName,
         uid,
       });
 
       isLoading(false);
-    }
+    };
   };
 
   const editMessage = (text, id) => {
