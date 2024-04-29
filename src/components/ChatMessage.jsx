@@ -29,7 +29,7 @@ function ChatMessage({ message, onEdit }) {
   return (
     <>
       <div className={`message ${messageClass}`}>
-        <img src={`${photoURL}`} />
+        {photoURL && <img src={`${photoURL}`} />}
         {imageURL ? (
           <img src={imageURL} className="message_image" />
         ) : (
