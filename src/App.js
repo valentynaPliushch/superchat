@@ -1,6 +1,8 @@
 import "./App.css";
-import { getAuth, signOut, onAuthStateChanged } from "firebase/auth";
-import { getAnalytics } from "firebase/analytics";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
+// import { getAnalytics } from "firebase/analytics";
 import SignIn from "./components/SignIn";
 import ChatRoom from "./components/ChatRoom";
 import { useEffect, useState } from "react";
@@ -29,6 +31,7 @@ function App() {
         )}
       </header>
       <section>{user ? <ChatRoom /> : <SignIn />}</section>
+      <ToastContainer />
     </div>
   );
 }
