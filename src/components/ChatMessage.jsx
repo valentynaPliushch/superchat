@@ -1,37 +1,31 @@
 import React from "react";
-import { getStorage, ref, deleteObject } from "firebase/storage";
-import { doc, deleteDoc } from "firebase/firestore";
-import { db } from "../firebase.config";
 import { getAuth } from "firebase/auth";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTrash, faPenToSquare } from "@fortawesome/free-solid-svg-icons";
+import { useDeleteMessage } from "../hooks/useDeleteMessage";
 
 function ChatMessage({ message, onEdit }) {
   const auth = getAuth();
-  const { text, imageURL, imageName, uid, photoURL } = message.data;
-
-  // ref.current.scrollIntoView({ behavior: "smooth" });
+  const deleteMsg = useDeleteMessage();
+  const { text, imageURL, imageName, uid } = message.data;
+  let { photoURL } = message.data;
+  if (!photoURL) {
+    photoURL = "public/avatar-159236_1280.png";
+  }
   const messageClass = uid === auth.currentUser.uid ? "sent" : "received";
 
-  const deleteMessage = async () => {
+  const deleteMessage = () => {
     if (window.confirm("Are you sure you want to delete?")) {
-      if (imageName && imageURL) {
-        const storage = getStorage();
-        const imageRef = ref(storage, `images/${imageName}`);
-        await deleteObject(imageRef);
-        await deleteDoc(doc(db, "messages", message.id));
-      } else {
-        await deleteDoc(doc(db, "messages", message.id));
-      }
+      deleteMsg.mutate({ imageURL, imageName, message });
     }
   };
 
   return (
     <>
       <div className={`message ${messageClass}`}>
-        {photoURL && <img src={`${photoURL}`} />}
+        <img src={photoURL} className="profile-img" alt="profile" />
         {imageURL ? (
-          <img src={imageURL} className="message_image" />
+          <img src={imageURL} className="message_image" alt="image" />
         ) : (
           <p>{text}</p>
         )}

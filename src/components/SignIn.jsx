@@ -1,31 +1,26 @@
 import React from "react";
 import { getAuth, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
+import { toast } from "react-toastify";
 
 function SignIn() {
   const auth = getAuth();
   const provider = new GoogleAuthProvider();
   const onSubmit = async () => {
     await signInWithPopup(auth, provider)
-      .then((result) => {
-        // const user = result.user;
-        // const user = result.user;
-      })
+      .then((result) => {})
       .catch((error) => {
-        // // const errorCode = error.code;
-        // const errorMessage = error.message;
-        // // const email = error.customData.email;
-        // // const credential = GoogleAuthProvider.credentialFromError(error);
+        toast.error(error.message);
       });
   };
 
   return (
-    <>
+    <div className="signIn-container">
       {!auth.currentUser && (
         <button onClick={onSubmit} className="signBtn">
           Sign In with Google
         </button>
       )}
-    </>
+    </div>
   );
 }
 
