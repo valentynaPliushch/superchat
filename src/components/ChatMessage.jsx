@@ -25,7 +25,7 @@ function ChatMessage({ message, onEdit }) {
       <div className={`message ${messageClass}`}>
         <img src={photoURL} className="profile-img" alt="profile" />
         {imageURL ? (
-          <img src={imageURL} className="message_image" alt="image" />
+          <img src={imageURL} className="message_image" alt="sended picture" />
         ) : (
           <p>{text}</p>
         )}
