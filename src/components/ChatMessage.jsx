@@ -12,7 +12,6 @@ function ChatMessage({ message, onEdit }) {
   if (!photoURL) {
     photoURL = "public/avatar-159236_1280.png";
   }
-
   const messageClass = uid === auth.currentUser.uid ? "sent" : "received";
 
   const deleteMessage = () => {
@@ -24,7 +23,7 @@ function ChatMessage({ message, onEdit }) {
   return (
     <>
       <div className={`message ${messageClass}`}>
-        <img src={`${photoURL}`} className="profile-img" alt="profile" />
+        <img src={photoURL} className="profile-img" alt="profile" />
         {imageURL ? (
           <img src={imageURL} className="message_image" alt="image" />
         ) : (
