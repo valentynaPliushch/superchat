@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { toast } from "react-toastify";
-import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { getAuth } from "firebase/auth";
 import { doc, updateDoc } from "firebase/firestore";
 import { db } from "../firebase.config";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
