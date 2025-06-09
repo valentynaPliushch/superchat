@@ -1,16 +1,14 @@
-import React, { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { toast } from "react-toastify";
-import { getAuth } from "firebase/auth";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { doc, updateDoc } from "firebase/firestore";
 import { db } from "../firebase.config";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPaperclip } from "@fortawesome/free-solid-svg-icons";
 import ChatMessage from "./ChatMessage";
-import Spinner from "./Spinner";
-import { useQuery } from "@tanstack/react-query";
-import getMessages from "../hooks/getMessages";
 import useUploadPicture from "../hooks/useUploadPicture";
 import useUploadMessage from "../hooks/useUploadMessage";
+import { collection, query, orderBy, onSnapshot } from "firebase/firestore";
 
 function ChatRoom() {
   const auth = getAuth();
@@ -21,6 +19,7 @@ function ChatRoom() {
   const mutationMessage = useUploadMessage();
 
   const [formValue, setFormValue] = useState();
+  const [messagesQuery, setMessagesQuery] = useState([]);
   const [edit, setEdit] = useState({
     value: false,
     id: "",
@@ -31,12 +30,21 @@ function ChatRoom() {
       chatContainerRef.current.scrollTop =
         chatContainerRef.current.scrollHeight;
     }
-  });
+  }, []);
 
-  const messagesQuery = useQuery({
-    queryKey: ["mesagges"],
-    queryFn: getMessages,
-  });
+  useEffect(() => {
+    const q = query(collection(db, "messages"), orderBy("createdAt"));
+
+    const unsubscribe = onSnapshot(q, (querySnapshot) => {
+      const msgs = querySnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setMessagesQuery(msgs);
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   const editMessage = (text, id) => {
     setFormValue(text);
@@ -73,10 +81,6 @@ function ChatRoom() {
     inputFile.current.click();
   };
 
-  if (messagesQuery.isLoading) {
-    return <Spinner />;
-  }
-
   return (
     <>
       <header className="header-btn">
@@ -85,7 +89,7 @@ function ChatRoom() {
         </button>
       </header>
       <main ref={chatContainerRef}>
-        {messagesQuery.data.map((message, index) => (
+        {messagesQuery.map((message, index) => (
           <ChatMessage key={index} message={message} onEdit={editMessage} />
         ))}
       </main>
@@ -117,7 +121,7 @@ function ChatRoom() {
         </button>
 
         <button className="form-button" type="submit" disabled={!formValue}>
-          <i class="fa-solid fa-paper-plane" />
+          <i className="fa-solid fa-paper-plane" />
         </button>
       </form>
     </>

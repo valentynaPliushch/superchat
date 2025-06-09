@@ -29,7 +29,7 @@ body {
   flex-direction: column;
   background-color: #efede9;
   border-radius: 30px;
-  margin: 6rem auto;
+  margin: 2rem auto;
   border: 3px black solid;
   box-shadow: 5px 5px black;
 }

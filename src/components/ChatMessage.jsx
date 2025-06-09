@@ -7,8 +7,8 @@ import { useDeleteMessage } from "../hooks/useDeleteMessage";
 function ChatMessage({ message, onEdit }) {
   const auth = getAuth();
   const deleteMsg = useDeleteMessage();
-  const { text, imageURL, imageName, uid } = message.data;
-  let { photoURL } = message.data;
+  const { text, imageURL, imageName, uid } = message;
+  let { photoURL } = message;
   if (!photoURL) {
     photoURL = "public/avatar-159236_1280.png";
   }
